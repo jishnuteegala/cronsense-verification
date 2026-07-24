@@ -1,0 +1,9 @@
+name: Probe lw-hash
+on:
+  schedule:
+    - cron: '0 0 L * *'
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: date --utc --iso-8601=seconds
