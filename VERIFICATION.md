@@ -81,14 +81,16 @@ Pending GitHub Actions next-run UI inspection.
 
 ## Acceptance Probes
 
-Docs draft the grammar; the GHA validator arbitrates. Probe branches pushed without transport rejection are listed below. `gh api repos/.../actions/workflows` registered all listed files as active workflows, including the invalid candidates. This only establishes push acceptance and registration; UI inspection and any deferred validation result remain pending.
+Docs draft the grammar; the GHA validator arbitrates. Cronsense's draft rejects `@hourly`, a sixth seconds field, and `L`/`W`/`#` tokens. It accepts names in ranges and steps. The observations below were collected with `gh api repos/jishnuteegala/cronsense-verification/actions/workflows`, `gh run list`, each run API endpoint, its check-suite/check-runs endpoint, and `gh run view --log-failed`.
 
-| Expression | Branch | Push/API result | UI validation |
-| --- | --- | --- | --- |
-| `@hourly` | `probe/hourly` | accepted; workflow registered | pending |
-| `0 0 0 * * *` | `probe/seconds` | accepted; workflow registered | pending |
-| `0 0 L * *` | `probe/lw-hash` | accepted; workflow registered | pending |
-| `0 0 * * MON-FRI/2` | `probe/name-range` | accepted; not listed by workflows API | pending |
+| Expression | Branch | Docs draft | Validator observation | Validator error / UI state |
+| --- | --- | --- | --- | --- |
+| `@hourly` | `probe/hourly` | rejected | Active workflow `319904423`; run `30128006457` completed with `failure` at `2026-07-24T21:31:13Z`. | No check runs or annotations; `gh run view --log-failed`: `failed to get run log: log not found`. UI-inspection pending. |
+| `0 0 0 * * *` | `probe/seconds` | rejected | Active workflow `319904428`; run `30128007161` completed with `failure` at `2026-07-24T21:31:14Z`. | No check runs or annotations; `gh run view --log-failed`: `failed to get run log: log not found`. UI-inspection pending. |
+| `0 0 L * *` | `probe/lw-hash` | rejected | Active workflow `319904431`; run `30128008284` completed with `failure` at `2026-07-24T21:31:15Z`. | No check runs or annotations; `gh run view --log-failed`: `failed to get run log: log not found`. UI-inspection pending. |
+| `0 0 15W * *` | `probe/w` | rejected | Active workflow `319938429`; run `30131406337` completed with `failure` at `2026-07-24T22:35:40Z`. | No check runs or annotations; `gh run view --log-failed`: `failed to get run log: log not found`. UI-inspection pending. |
+| `0 0 * * 1#2` | `probe/hash` | rejected | Active workflow `319938490`; run `30131412326` completed with `failure` at `2026-07-24T22:35:48Z`. | No check runs or annotations; `gh run view --log-failed`: `failed to get run log: log not found`. UI-inspection pending. |
+| `0 0 * * MON-FRI/2` | `probe/name-range` | accepted | Push accepted, but the workflows API did not list `probe-name-range.yml` and `gh run list` returned no run. | No validator result exposed by API. UI-inspection pending. |
 
 ## Deterministic Gate And Conflict Rule
 
