@@ -1,0 +1,9 @@
+name: Probe name-range
+on:
+  schedule:
+    - cron: '0 0 * * MON-FRI/2'
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: date --utc --iso-8601=seconds
