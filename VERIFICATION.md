@@ -61,3 +61,37 @@ Expression: `*/5 * * * *`
 - 2026-07-24T22:15:00.000Z
 
 Observation pending until 2026-07-31 UTC.
+
+### Month Rollover
+
+Expression: `30 23 31 * *`
+
+- 2026-07-31T23:30:00.000Z
+- 2026-08-31T23:30:00.000Z
+- 2026-10-31T23:30:00.000Z
+- 2026-12-31T23:30:00.000Z
+- 2027-01-31T23:30:00.000Z
+- 2027-03-31T23:30:00.000Z
+- 2027-05-31T23:30:00.000Z
+- 2027-07-31T23:30:00.000Z
+- 2027-08-31T23:30:00.000Z
+- 2027-10-31T23:30:00.000Z
+
+Pending GitHub Actions next-run UI inspection.
+
+## Acceptance Probes
+
+Docs draft the grammar; the GHA validator arbitrates. Probe branches pushed without transport rejection are listed below. `gh api repos/.../actions/workflows` registered all listed files as active workflows, including the invalid candidates. This only establishes push acceptance and registration; UI inspection and any deferred validation result remain pending.
+
+| Expression | Branch | Push/API result | UI validation |
+| --- | --- | --- | --- |
+| `@hourly` | `probe/hourly` | accepted; workflow registered | pending |
+| `0 0 0 * * *` | `probe/seconds` | accepted; workflow registered | pending |
+| `0 0 L * *` | `probe/lw-hash` | accepted; workflow registered | pending |
+| `0 0 * * MON-FRI/2` | `probe/name-range` | accepted; not listed by workflows API | pending |
+
+## Deterministic Gate And Conflict Rule
+
+The deterministic-only gate requires predicted firing sets to match both GitHub Actions next-run display and observed run logs. A skipped firing with a high-load explanation is logged, not failed.
+
+If next-run UI and run log disagree and the run log agrees with Cronsense, the run log wins and the discrepancy is recorded. If observation contradicts the model, change the parser or engine, never the observation.
