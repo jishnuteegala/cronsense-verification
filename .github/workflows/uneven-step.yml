@@ -1,0 +1,11 @@
+name: Uneven step reset
+
+on:
+  schedule:
+    - cron: '*/7 * * * *'
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: date --utc --iso-8601=seconds
