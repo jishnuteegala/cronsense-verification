@@ -8,7 +8,14 @@ while IFS=$'\t' read -r path expected; do
   fi
 done < docs-snapshot.tsv
 
-stamp=$(grep -Eo 'recorded-at: [0-9]{4}-[0-9]{2}-[0-9]{2}' VERIFICATION.md | head -1 | cut -d' ' -f2)
-if [[ -n "$stamp" ]] && (( $(date -u +%s) - $(date -u -d "$stamp" +%s) > 7776000 )); then
-  echo "::warning::Verification stamp is older than 90 days."
+stamps=$(grep -Eo 'recorded-at: [0-9]{4}-[0-9]{2}-[0-9]{2}' VERIFICATION.md || true)
+if [[ -z "$stamps" ]]; then
+  echo "::warning::Verification stamp is missing."
+else
+  while IFS= read -r stamp; do
+    date=${stamp#recorded-at: }
+    if (( $(date -u +%s) - $(date -u -d "$date" +%s) > 7776000 )); then
+      echo "::warning::Verification stamp $date is older than 90 days."
+    fi
+  done <<< "$stamps"
 fi
