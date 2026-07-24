@@ -1,0 +1,9 @@
+name: Probe hourly
+on:
+  schedule:
+    - cron: '@hourly'
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: date --utc --iso-8601=seconds
