@@ -1,9 +1,0 @@
-name: Probe hash
-on:
-  schedule:
-    - cron: '0 0 * * 1#2'
-jobs:
-  observe:
-    runs-on: ubuntu-latest
-    steps:
-      - run: date --utc --iso-8601=seconds

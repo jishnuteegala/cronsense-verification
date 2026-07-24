@@ -1,9 +1,0 @@
-name: Probe W
-on:
-  schedule:
-    - cron: '0 0 15W * *'
-jobs:
-  observe:
-    runs-on: ubuntu-latest
-    steps:
-      - run: date --utc --iso-8601=seconds
