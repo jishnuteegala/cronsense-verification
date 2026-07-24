@@ -1,0 +1,11 @@
+name: DOM DOW restricted
+
+on:
+  schedule:
+    - cron: '0 12 1-7 * MON'
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: date --utc --iso-8601=seconds
