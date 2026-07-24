@@ -1,0 +1,11 @@
+name: Month rollover
+
+on:
+  schedule:
+    - cron: '30 23 31 * *'
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: date --utc --iso-8601=seconds
