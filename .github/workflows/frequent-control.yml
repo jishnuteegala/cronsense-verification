@@ -1,0 +1,11 @@
+name: Frequent control
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: date --utc --iso-8601=seconds
