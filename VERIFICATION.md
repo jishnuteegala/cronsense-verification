@@ -97,3 +97,36 @@ Docs draft the grammar; the GHA validator arbitrates. Cronsense's draft rejects 
 The deterministic-only gate requires predicted firing sets to match both GitHub Actions next-run display and observed run logs. A skipped firing with a high-load explanation is logged, not failed.
 
 If next-run UI and run log disagree and the run log agrees with Cronsense, the run log wins and the discrepancy is recorded. If observation contradicts the model, change the parser or engine, never the observation.
+
+## Observation Outcomes (window closed 2026-07-31 UTC)
+
+recorded-at: 2026-07-31T21:45:00Z
+Observation window 2026-07-24T22:38Z through 2026-07-31T21:16Z (schedules attached ~22:38Z on build day, not the recorded-at time).
+
+### Frequent Control (`*/5 * * * *`) - delay and high-load skip confirmed
+
+Predicted firing slots over the window: ~2016 (one every 5 minutes). Observed scheduled runs: **93**. Every observed run's start time falls at or after a predicted 5-minute slot (delivery delayed by seconds to >60 minutes); no run fired at a time outside the predicted slot set. First observed 2026-07-24T22:38:54Z, last 2026-07-31T21:16:00Z.
+
+Outcome: the predicted firing *set* is a correct superset of actual deliveries. GitHub silently skips the large majority of high-frequency scheduled runs and delays those it does deliver. This is logged, not a failure, per the deterministic gate's high-load-skip rule. **Empirically confirms** the sub-5-minute-futility / high-load-skip and delay-window warnings: a `*/5` schedule delivered 93 of ~2016 nominal runs (~4.6%).
+
+### Uneven Step Reset (`*/7 * * * *`) - firing set correct, same skip behaviour
+
+Observed scheduled runs: **94**, first 2026-07-24T22:38:36Z, last 2026-07-31T21:14:49Z. All observed starts align to predicted `*/7`-from-zero slots (delayed); none fired at an unpredicted minute. The `*/N`-resets-at-zero-each-hour model is not contradicted by any observation. Same delay/skip behaviour as the control.
+
+### DOM/DOW Both Restricted (`0 12 1-7 * MON`) - OR semantics confirmed
+
+The workflow fired once, on **2026-07-27** (a Monday), run started 2026-07-27T14:36:41Z (delayed from the 12:00Z slot). 2026-07-27 is day-of-month 27, which is **outside** the restricted DOM range `1-7`; the run fired because the day-of-week field (`MON`) matched. A firing on a day that satisfies DOW but not DOM is only possible under **OR** combination, not AND.
+
+Outcome: **GitHub Actions uses OR semantics** when both day fields are restricted (a day fires if it matches DOM *or* DOW), matching the POSIX crontab specification the GitHub docs link to. The `dom-dow-or-semantics` warning is hereby **un-gated**: it moves from POSIX-inference to empirically-confirmed. (Only the first Monday in the window was observable; a single OR-only firing is sufficient to falsify AND, which would have required both DOM∈1-7 and DOW=MON.)
+
+### Month Rollover (`30 23 31 * *`) - verified by computation cross-check
+
+First predicted firing 2026-07-31T23:30Z had not yet occurred when the window closed (21:16Z). Per the spec's deterministic gate, month-rollover is verified by computation cross-checked against the next-run display rather than by waiting for calendar boundaries: the engine correctly skips 30-day months and February, emitting only 31-day months (Jul, Aug, Oct, Dec, Jan, Mar, May, Jul, Aug, Oct...). No observation contradicts the computed set.
+
+### Acceptance Probes - rejection confirmed
+
+All five invalid-syntax probes (`@hourly`, six-field seconds, `L`, `W`, `#`) completed with `failure` and were never listed as active schedulable workflows, confirming GitHub rejects exactly what the Cronsense parser rejects. The one accepted-grammar probe (`MON-FRI/2` name-range-with-step) was accepted on push, consistent with the parser accepting names in ranges and steps.
+
+### Verdict
+
+The deterministic gate passes: no observed firing occurred outside its predicted set for any expression; all divergence is GitHub's documented delay/high-load-skip behaviour, which the gate logs rather than fails. The DOM/DOW OR-semantics warning is un-gated as empirically confirmed. Delay-window and high-load-skip warnings are empirically confirmed by the ~4.6% delivery rate of the frequent control.
